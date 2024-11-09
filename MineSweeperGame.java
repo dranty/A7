@@ -66,11 +66,12 @@ public class MineSweeperGame extends Canvas {
                     cells[i][j].gameOverState = false;
                     cells[i][j].vCState = visualCellState.unOpened;
                     cells[i][j].iCState = internalCellState.noMine;
-                    cells[i][j].adjacencyVal = 0;
                 }
             }
             
             int totalMines = mineMapGenerator(cells, gameDifficulty); // works
+            adjacencyCalculator(cells);
+            
 
             System.out.println("Mode: " + gameDifficulty); // debug
             System.out.println("Total Mapped Mines: " + totalMines); // debug
@@ -78,21 +79,15 @@ public class MineSweeperGame extends Canvas {
 
         public int mineMapGenerator(cell[][] cells, difficulty gameDifficulty) { // works
             Random rand = new Random();
-            int mineChance = 0;
+            int mineChance = 2;
             if (gameDifficulty == difficulty.easy) {
-                mineChance++;
-                mineChance++;
-                mineChance++;
-                mineChance++;
+                int minechance2 = mineChance + 4;
             }
             if (gameDifficulty == difficulty.medium) {
-                mineChance++;
-                mineChance++;
-                mineChance++;
+                int minechance2 = mineChance + 3;
             }
             if (gameDifficulty == difficulty.hard) {
-                mineChance++;
-                mineChance++;
+                int minechance2 = mineChance + 2;
             }
             
             int mineBucket = 0; // returns the total amount of mines.
@@ -109,6 +104,51 @@ public class MineSweeperGame extends Canvas {
                 return mineBucket;
         }
 
+        public void adjacencyCalculator(cell[][] cells) { // this function will be called recursively on all open cells.
+            for (int i = 0; i < cells.length; i++) {
+                for (int j = 0; j < cells[i].length; j++) {
+                    if (cells[i][j].iCState == internalCellState.hasMine) {
+                        continue;
+                    }
+                    int adjacencyValue = checkNeighbors(i, j); // this will check the corresponding neighbors to the cell, if one of the neighbors is a mine, increment by 1.
+                    cells[i][j].adjacencyVal = adjacencyValue;
+                }
+            }
+        }
+
+        public int checkNeighbors(int pos, int pos2) {
+            int adjacencyVal = 0;
+            for (int i = 0; i < cells.length; i++) {
+                for (int j = 0; j < cells[i].length; j++) {
+                    if (cells[i - 1][j - 1].iCState == internalCellState.hasMine) { // top right
+                        adjacencyVal++;
+                    }
+                    if (cells[i - 1][j].iCState == internalCellState.hasMine) { // middle top
+                        adjacencyVal++;
+                    }
+                    if (cells[i - 1][j + 1].iCState == internalCellState.hasMine) { // top left
+                       adjacencyVal++;
+                    }
+                    if (cells[i][j - 1].iCState == internalCellState.hasMine) { // middle left
+                        adjacencyVal++;
+                    }
+                    if (cells[i][j + 1].iCState == internalCellState.hasMine) { // middle right
+                        adjacencyVal++;
+                    }
+                    if (cells[i + 1][j - 1].iCState == internalCellState.hasMine) { // bottom left
+                        adjacencyVal++;
+                    }
+                    if (cells[i + 1][j].iCState == internalCellState.hasMine) { // bottom middle
+                        adjacencyVal++;
+                    }
+                    if (cells[i + 1][j + 1].iCState == internalCellState.hasMine) { // bottom right
+                        adjacencyVal++;
+                    }
+                }
+            }
+            return adjacencyVal;
+        }
+
         public void printBoard() {
             System.out.println("Minesweeper Board:");
             for (int i = 0; i < cells.length; i++) {
@@ -116,7 +156,8 @@ public class MineSweeperGame extends Canvas {
                     if (cells[i][j].iCState == internalCellState.hasMine) {
                         System.out.print("* ");
                     } else {
-                        System.out.print(". ");
+                        // Print the adjacency value for safe cells
+                        System.out.print(cells[i][j].adjacencyVal + " ");
                     }
                 }
                 System.out.println();
