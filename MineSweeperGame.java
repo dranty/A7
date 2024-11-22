@@ -33,8 +33,6 @@ public class MineSweeperGame extends Canvas {
         class gameVariables {
             difficulty gameDifficulty; // Indicates how big the grid should be and the amount of mines on a grid.
         }
-
-
     
         enum visualCellState { unOpened, opened, flagged }
     
@@ -125,31 +123,6 @@ public class MineSweeperGame extends Canvas {
             int pos2 = 2;
         }
 
-
-        public class CellLocations {
-            cell topRight;
-            cell middleTop;
-            cell topLeft;
-            cell middleLeft;
-            cell middleRight;
-            cell bottomLeft;
-            cell bottomMiddle;
-            cell bottomRight; 
-
-                public void CellCords(cell[][] cells, int pos1, int pos2) {
-                    topRight = cells[pos1 - 1][pos2 - 1];
-                    middleTop = cells[pos1 - 1][pos2];
-                    topLeft = cells[pos1 - 1][pos2 + 1];
-                    middleLeft = cells[pos1][pos2 - 1];
-                    middleRight = cells[pos1][pos2 + 1];
-                    bottomLeft = cells[pos1 + 1][pos2 - 1];
-                    bottomMiddle = cells[pos1 + 1][pos2];
-                    bottomRight = cells[pos1 + 1][pos2 + 1];
-                }     
-        }
-
-
-
         public int checkNeighbors(int pos1, int pos2) throws IndexOutOfBoundsException { // this will check the corresponding neighbors to the cell, if one of the neighbors is a mine, increment by 1. ** also see notes for solution 
             int adjacencyVal = 0;
                         if (pos1 - 1 <= -1 || pos2 - 1 <= -1) {
@@ -161,7 +134,7 @@ public class MineSweeperGame extends Canvas {
                         
                         if (pos1 - 1 <= -1) {
                             } else {  
-                                if (topRight.iCState == internalCellState.hasMine) { // middle top
+                                if (cells[pos1 - 1][pos2].iCState == internalCellState.hasMine) { // middle top
                                 adjacencyVal++;
                                 }
                             }
@@ -210,10 +183,6 @@ public class MineSweeperGame extends Canvas {
                     return adjacencyVal;
                 }
 
-            public boolean isValid(cell[][] cells, int X, int Y) {
-                
-            }
-
             public int getClick() { // this method will get where in the grid the player clicked and store it for later use. 
                 int X = 1;
                 int Y = 2;
@@ -234,21 +203,21 @@ public class MineSweeperGame extends Canvas {
                 cells[X + 1][Y].iCState = internalCellState.noMine;
                 cells[X + 1][Y + 1].iCState = internalCellState.noMine;
 
-                // reveal logic here TO DO!!!
+                //
             }
 
-            // public void recursiveReveal(cell[][] cells, int X, int Y) {
-            //     /* This method will be called when the first click is done, it will check each square around the firstClick square.
-            //      * In total it will check 8 squares, which will all be called recursively (using the neighbors method.)
-            //      * If the square has no mines neighboring mines, itself will be revealed and will reveal the nearest square that is not a mine. 
-            //      * 
-            //      */
+            public void recursiveReveal(cell[][] cells, int X, int Y) {
+                /* This method will be called when the first click is done, it will check each square around the firstClick square.
+                 * In total it will check 8 squares, which will all be called recursively (using the neighbors method.)
+                 * If the square has no mines neighboring mines, itself will be revealed and will reveal the nearest square that is not a mine. 
+                 * 
+                 */
                 
-            //     checkNeighbors(X, Y);
+                
                 
 
 
-            // }
+            }
 
             public void printBoard() {
                 System.out.println("Minesweeper Board:");
