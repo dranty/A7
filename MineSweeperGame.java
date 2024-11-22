@@ -25,15 +25,16 @@ public class MineSweeperGame extends Canvas {
         }
             
         class cell {
-            boolean gameOverState; // Indicates whether all mines should be revealed if true.
             visualCellState vCState; // This will contain the data for the visual state of the mine. 
             internalCellState iCState; // this is the data that will contain the internal state of the mine (0, hasMine, or noMine).
-            int adjacencyVal; // this number will appear if the cell is close to a mine visually
+            int adjacencyVal; // this number will appear if the cell is close to a mine visually, doesnt need to be there
         } 
         
         class gameVariables {
-            difficulty gameDifficulty;
+            difficulty gameDifficulty; // Indicates how big the grid should be and the amount of mines on a grid.
         }
+
+
     
         enum visualCellState { unOpened, opened, flagged }
     
@@ -46,7 +47,8 @@ public class MineSweeperGame extends Canvas {
         public static void main(String[] args) {
             MineSweeperGame game = new MineSweeperGame();
             game.printBoard();
-    }
+        }
+
         public MineSweeperGame() {
             faceStates face = faceStates.smiling;
             difficulty gameDifficulty = difficulty.medium; // this will change depends on user input
@@ -63,7 +65,6 @@ public class MineSweeperGame extends Canvas {
             for (int i = 0; i < cells.length; i++) {
                 for (int j = 0; j < cells[i].length; j++) { // all cells are standard but initialized.
                     cells[i][j] = new cell();
-                    cells[i][j].gameOverState = false;
                     cells[i][j].vCState = visualCellState.unOpened;
                     cells[i][j].iCState = internalCellState.noMine;
                 }
@@ -71,6 +72,7 @@ public class MineSweeperGame extends Canvas {
             
             int totalMines = mineMapGenerator(cells, gameDifficulty); // works
             adjacencyCalculator(cells);
+            firstClick(cells);
             
 
             System.out.println("Mode: " + gameDifficulty); // debug
@@ -81,13 +83,19 @@ public class MineSweeperGame extends Canvas {
             Random rand = new Random();
             int mineChance = 2;
             if (gameDifficulty == difficulty.easy) {
-                int minechance2 = mineChance + 4;
+                mineChance++;
+                mineChance++;
+                mineChance++;
+                mineChance++;
             }
             if (gameDifficulty == difficulty.medium) {
-                int minechance2 = mineChance + 3;
+                mineChance++;
+                mineChance++;
+
             }
             if (gameDifficulty == difficulty.hard) {
-                int minechance2 = mineChance + 2;
+                mineChance++;
+
             }
             
             int mineBucket = 0; // returns the total amount of mines.
@@ -104,63 +112,157 @@ public class MineSweeperGame extends Canvas {
                 return mineBucket;
         }
 
-        public void adjacencyCalculator(cell[][] cells) { // this function will be called recursively on all open cells.
+        public void adjacencyCalculator(cell[][] cells) { // this function will be call recursively checkNeighhbors on all open cells. also add if the ic is a mine skip this function.
             for (int i = 0; i < cells.length; i++) {
                 for (int j = 0; j < cells[i].length; j++) {
-                    if (cells[i][j].iCState == internalCellState.hasMine) {
-                        continue;
-                    }
-                    int adjacencyValue = checkNeighbors(i, j); // this will check the corresponding neighbors to the cell, if one of the neighbors is a mine, increment by 1.
-                    cells[i][j].adjacencyVal = adjacencyValue;
+                    cells[i][j].adjacencyVal = checkNeighbors(i, j); // works fine but can be buggy (displays 0 even though there is a minewhen there are lots of mines, not sure why. 
                 }
             }
         }
 
-        public int checkNeighbors(int pos, int pos2) {
+        public void clickDetection() { // implement click detection through here. 
+            int pos1 = 3;
+            int pos2 = 2;
+        }
+
+
+        public class CellLocations {
+            cell topRight;
+            cell middleTop;
+            cell topLeft;
+            cell middleLeft;
+            cell middleRight;
+            cell bottomLeft;
+            cell bottomMiddle;
+            cell bottomRight; 
+
+                public void CellCords(cell[][] cells, int pos1, int pos2) {
+                    topRight = cells[pos1 - 1][pos2 - 1];
+                    middleTop = cells[pos1 - 1][pos2];
+                    topLeft = cells[pos1 - 1][pos2 + 1];
+                    middleLeft = cells[pos1][pos2 - 1];
+                    middleRight = cells[pos1][pos2 + 1];
+                    bottomLeft = cells[pos1 + 1][pos2 - 1];
+                    bottomMiddle = cells[pos1 + 1][pos2];
+                    bottomRight = cells[pos1 + 1][pos2 + 1];
+                }     
+        }
+
+
+
+        public int checkNeighbors(int pos1, int pos2) throws IndexOutOfBoundsException { // this will check the corresponding neighbors to the cell, if one of the neighbors is a mine, increment by 1. ** also see notes for solution 
             int adjacencyVal = 0;
-            for (int i = 0; i < cells.length; i++) {
-                for (int j = 0; j < cells[i].length; j++) {
-                    if (cells[i - 1][j - 1].iCState == internalCellState.hasMine) { // top right
-                        adjacencyVal++;
-                    }
-                    if (cells[i - 1][j].iCState == internalCellState.hasMine) { // middle top
-                        adjacencyVal++;
-                    }
-                    if (cells[i - 1][j + 1].iCState == internalCellState.hasMine) { // top left
-                       adjacencyVal++;
-                    }
-                    if (cells[i][j - 1].iCState == internalCellState.hasMine) { // middle left
-                        adjacencyVal++;
-                    }
-                    if (cells[i][j + 1].iCState == internalCellState.hasMine) { // middle right
-                        adjacencyVal++;
-                    }
-                    if (cells[i + 1][j - 1].iCState == internalCellState.hasMine) { // bottom left
-                        adjacencyVal++;
-                    }
-                    if (cells[i + 1][j].iCState == internalCellState.hasMine) { // bottom middle
-                        adjacencyVal++;
-                    }
-                    if (cells[i + 1][j + 1].iCState == internalCellState.hasMine) { // bottom right
-                        adjacencyVal++;
-                    }
-                }
-            }
-            return adjacencyVal;
-        }
+                        if (pos1 - 1 <= -1 || pos2 - 1 <= -1) {
+                            } else { 
+                                if (cells[pos1 - 1][pos2 - 1].iCState == internalCellState.hasMine) { // top right
+                                adjacencyVal++;
+                            }
+                        }
+                        
+                        if (pos1 - 1 <= -1) {
+                            } else {  
+                                if (topRight.iCState == internalCellState.hasMine) { // middle top
+                                adjacencyVal++;
+                                }
+                            }
+                
+                        if (pos1 - 1 <= -1 || pos2 + 1 > cells.length - 1) {
+                            } else { 
+                                if (cells[pos1 - 1][pos2 + 1].iCState == internalCellState.hasMine) { // top left
+                                adjacencyVal++;
+                                }
+                            }
+                
+                        if (pos2 - 1 <= -1) {
+                            } else { 
+                                if (cells[pos1][pos2 - 1].iCState == internalCellState.hasMine) { // middle left
+                                adjacencyVal++;
+                                }
+                            }
+                                  
+                        if (pos2 + 1 >= cells.length - 1) {
+                            } else { 
+                                if (cells[pos1][pos2 + 1].iCState == internalCellState.hasMine) { // middle right
+                                adjacencyVal++;
+                                }
+                            }
 
-        public void printBoard() {
-            System.out.println("Minesweeper Board:");
-            for (int i = 0; i < cells.length; i++) {
-                for (int j = 0; j < cells[i].length; j++) {
-                    if (cells[i][j].iCState == internalCellState.hasMine) {
-                        System.out.print("* ");
-                    } else {
-                        // Print the adjacency value for safe cells
-                        System.out.print(cells[i][j].adjacencyVal + " ");
-                    }
+                        if (pos1 + 1 > cells.length - 1 || pos2 - 1 <= -1) {
+                            } else { 
+                                if (cells[pos1 + 1][pos2 - 1].iCState == internalCellState.hasMine) { // bottom left
+                                   adjacencyVal++;
+                                }
+                            }
+                    
+                        if (pos1 + 1 > cells.length - 1) {
+                            } else { 
+                                if (cells[pos1 + 1][pos2].iCState == internalCellState.hasMine) { // bottom middle
+                                    adjacencyVal++;
+                                }
+                            }
+                            
+                        if (pos1 + 1 > cells.length - 1 || pos2 + 1 > cells.length - 1) {
+                            } else {
+                                if (cells[pos1 + 1][pos2 + 1].iCState == internalCellState.hasMine) { // bottom right
+                                    adjacencyVal++;
+                            }
+                        }
+                    return adjacencyVal;
                 }
-                System.out.println();
+
+            public boolean isValid(cell[][] cells, int X, int Y) {
+                
             }
-        }
+
+            public int getClick() { // this method will get where in the grid the player clicked and store it for later use. 
+                int X = 1;
+                int Y = 2;
+                return X;
+            }
+        
+            public void firstClick(cell[][] cells) { // upon first click, the 9x9 area around the click location will be a noMine & will be revealed.
+                int X = 3;
+                int Y = 3;
+
+                cells[X][Y].iCState = internalCellState.noMine;
+                cells[X - 1][Y - 1].iCState = internalCellState.noMine;
+                cells[X - 1][Y].iCState = internalCellState.noMine;
+                cells[X - 1][Y + 1].iCState = internalCellState.noMine;
+                cells[X][Y - 1].iCState = internalCellState.noMine;
+                cells[X][Y + 1].iCState = internalCellState.noMine;
+                cells[X + 1][Y - 1].iCState = internalCellState.noMine;
+                cells[X + 1][Y].iCState = internalCellState.noMine;
+                cells[X + 1][Y + 1].iCState = internalCellState.noMine;
+
+                // reveal logic here TO DO!!!
+            }
+
+            // public void recursiveReveal(cell[][] cells, int X, int Y) {
+            //     /* This method will be called when the first click is done, it will check each square around the firstClick square.
+            //      * In total it will check 8 squares, which will all be called recursively (using the neighbors method.)
+            //      * If the square has no mines neighboring mines, itself will be revealed and will reveal the nearest square that is not a mine. 
+            //      * 
+            //      */
+                
+            //     checkNeighbors(X, Y);
+                
+
+
+            // }
+
+            public void printBoard() {
+                System.out.println("Minesweeper Board:");
+                for (int i = 0; i < cells.length; i++) {
+                    for (int j = 0; j < cells[i].length; j++) {
+                        if (i == 3 && j == 3) {
+                            System.out.print("+ ");
+                        } else if (cells[i][j].iCState == internalCellState.hasMine) {
+                            System.out.print("* ");
+                        } else {
+                            System.out.print(cells[i][j].adjacencyVal + " ");
+                        }
+                    }
+                    System.out.println();
+                }
+            }
 }
